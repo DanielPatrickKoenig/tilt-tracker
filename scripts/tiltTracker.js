@@ -15,16 +15,43 @@
 
 // How to load in modules
 const Scene = require('Scene');
+const Patches = require('Patches');
 // const SceneModule = require('SceneModule');
 
 // Use export keyword to make a symbol available in scripting debug console
 export const Diagnostics = require('Diagnostics');
 const FaceTracking = require('FaceTracking');
-Scene.root.findFirst('plane0').then(function (r) {
-    r.worldTransform.rotation.z.monitor().subscribe(function (z) {
-        Diagnostics.log(z.newValue);
+let tilt;
+let top;
+let center;
+
+Scene.root.findFirst('canvas0').then(function (r) {
+    const canvasBounds = r.bounds;
+    top = canvasBounds.height.mul(.75);
+    center = canvasBounds.width.mul(.5);
+    Patches.inputs.setScalar('top', top);
+    Patches.inputs.setScalar('center', center);
+    Scene.root.findFirst('plane0').then(function (r) {
+        r.worldTransform.position.x.monitor().subscribe(function (z) {
+            
+            // Diagnostics.log(z.newValue);
+            tilt = z.newValue;
+            Diagnostics.log(tilt);
+            Patches.inputs.setScalar('tilt', (tilt * 1000) - 50);
+            
+            // if(rect){
+            //     rect.transform.position.x = z.newValue;
+            // //     Diagnostics.log(rect.transform.position.x);
+            // }
+        });
     });
+
 });
+
+// Scene.root.findFirst('rectangle0').then(function (r) {
+//     rect = r;
+    
+// });
 
 
 
@@ -37,7 +64,7 @@ Scene.root.findFirst('plane0').then(function (r) {
 // Diagnostics.log(plane);
 
 
-Diagnostics.watch("Mouth Openness - ", FaceTracking.face(0).mouth.openness);
+// Diagnostics.watch("Mouth Openness - ", FaceTracking.face(0).mouth.openness);
 
 // Scene.root.findFirst('plane0')
 //    .then(
@@ -47,6 +74,9 @@ Diagnostics.watch("Mouth Openness - ", FaceTracking.face(0).mouth.openness);
 //    ); 
 // Enables async/await in JS [part 1]
 (async function() {
+
+    // await Patches.inputs.setBoolean('tilt', output);
+    // await Patches.inputs.setScalar('tilt', output);
     // Diagnostics.log(FaceTracking.face(0).mouth.openness);
 // To use variables and functions across files, use export/import keyword
 // export const animationDuration = 10;
