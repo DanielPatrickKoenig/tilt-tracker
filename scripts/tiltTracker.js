@@ -24,6 +24,8 @@ const FaceTracking = require('FaceTracking');
 let tilt;
 let top;
 let center;
+let proj;
+let rectTop = 0;
 
 Scene.root.findFirst('canvas0').then(function (r) {
     const canvasBounds = r.bounds;
@@ -36,7 +38,7 @@ Scene.root.findFirst('canvas0').then(function (r) {
             
             // Diagnostics.log(z.newValue);
             tilt = z.newValue;
-            Diagnostics.log(tilt);
+            // Diagnostics.log(tilt);
             Patches.inputs.setScalar('tilt', (tilt * -1000) - 50);
             
             // if(rect){
@@ -45,6 +47,24 @@ Scene.root.findFirst('canvas0').then(function (r) {
             // }
         });
     });
+    // Scene.root.findFirst('rectangle1').then(function (n) {
+    //     // const rect = n;
+        
+    // });
+    const units = 2;
+    Scene.root.findFirst('timeTracker').then(function (r) {
+        r.worldTransform.position.x.monitor().subscribe(function (x) {
+            let oldRectTop = rectTop;
+            rectTop = Math.abs(x.newValue)%units;
+            if(rectTop < oldRectTop){
+                Patches.inputs.setScalar('horizontal', canvasBounds.width.mul(Math.random()));
+            }
+            proj = canvasBounds.height.div(units).mul(rectTop);
+            
+            Patches.inputs.setScalar('projectile', proj);
+        });
+    });
+    
 
 });
 
