@@ -37,7 +37,7 @@ Scene.root.findFirst('canvas0').then(function (r) {
             // Diagnostics.log(z.newValue);
             tilt = z.newValue;
             Diagnostics.log(tilt);
-            Patches.inputs.setScalar('tilt', (tilt * 1000) - 50);
+            Patches.inputs.setScalar('tilt', (tilt * -1000) - 50);
             
             // if(rect){
             //     rect.transform.position.x = z.newValue;
