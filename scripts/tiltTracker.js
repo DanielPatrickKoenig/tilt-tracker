@@ -27,96 +27,139 @@ let center;
 let proj;
 let rectTop = 0;
 let moverPos = {x: 0, y:0};
+let targetPos = {x: 0, y: 0};
 
 let size = {w: 100, h: 50};
+let targetSize = {w: 200, h: 50};
 let hitters = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
 let hits = [{h: false, v: false}];
+let misses = [{h: false, v: false}];
+
+let blockCount = 0;
+let missCount = 0;
+let blockText = `Blocks ${blockCount}`;
+let missText = `Misses ${missCount}`;
+
+
 
 let times = [
-    {current: 0, last: 0, running:true, div: 2, startx: 0, endx: 0},
-    {current: 0, last: 0, running:true, div: 2, startx: 0, endx: 0},
-    {current: 0, last: 0, running:true, div: 2, startx: 0, endx: 0}
+    {current: 0, last: 0, running:true, div: 2, startx: 0, endx: 0, show: true},
+    {current: 0, last: 0, running:true, div: 2, startx: 0, endx: 0, show: true},
+    {current: 0, last: 0, running:true, div: 2, startx: 0, endx: 0, show: true}
 ];
 
-Scene.root.findFirst('canvas0').then(function (r) {
-    const canvasBounds = r.bounds;
-    top = canvasBounds.height.mul(.75);
-    center = canvasBounds.width.mul(.5);
-    Patches.inputs.setScalar('center', center);
-    Scene.root.findFirst('plane0').then(function (r) {
-        r.worldTransform.position.x.monitor().subscribe(function (x) {
-            
-            // Diagnostics.log(z.newValue);
-            tilt = x.newValue;
-            // Diagnostics.log(tilt);
-            Patches.inputs.setScalar('tilt', (tilt * -1000) - 120);
-            
-            // if(rect){
-            //     rect.transform.position.x = z.newValue;
-            // //     Diagnostics.log(rect.transform.position.x);
-            // }
-        });
+Scene.root.findFirst('rectangle2').then(function (r2) {
+    r2.transform.position.x.monitor().subscribe(function (x) {
+        targetPos.x = x.newValue;
     });
-    // Scene.root.findFirst('rectangle1').then(function (n) {
-    //     // const rect = n;
+    r2.transform.position.y.monitor().subscribe(function (y) {
+        targetPos.y = y.newValue;
+    });
+    Scene.root.findFirst('canvas0').then(function (r) {
+        const canvasBounds = r.bounds;
+        top = canvasBounds.height.mul(.75);
+        center = canvasBounds.width.mul(.5);
+        Patches.inputs.setScalar('center', center);
+        Scene.root.findFirst('plane0').then(function (r) {
+            r.worldTransform.position.x.monitor().subscribe(function (x) {
+                
+                // Diagnostics.log(z.newValue);
+                tilt = x.newValue;
+                // Diagnostics.log(tilt);
+                Patches.inputs.setScalar('tilt', (tilt * -1000) - 50);
+                
+                // if(rect){
+                //     rect.transform.position.x = z.newValue;
+                // //     Diagnostics.log(rect.transform.position.x);
+                // }
+            });
+        });
         
-    // });
-    Scene.root.findFirst('timeTracker').then(function (r) {
-        r.worldTransform.position.x.monitor().subscribe(function (x) {
-            let oldRectTop = rectTop;
-            // times[0] = x.newValue;'
-            if(times[0].running){
-                times[0].current += x.newValue - times[0].last;
-            }
-            times[0].last = x.newValue;
-            rectTop = Math.abs(x.newValue)%times[0].div;
-            if(rectTop < oldRectTop){
-                // Diagnostics.log('reastarted');
-                times[0].startx = Math.random();
-                times[0].endx = Math.random();
-                Patches.inputs.setScalar('horizontal1', canvasBounds.width.mul(Math.random()));
-                
-                // times[0].running = Math.random() > .1;
-            }
-            proj = canvasBounds.height.div(times[0].div).mul(Math.abs(times[0].current)%times[0].div);
-
-            // let mult = (((times[0].startx - times[0].endx) * times[0].current%times[0].div) / times[0].div);
-            // Diagnostics.log(mult);
-            // Patches.inputs.setScalar('horizontal1', canvasBounds.width.mul(mult));
-            Patches.inputs.setScalar('vertical1', proj);
-            // Diagnostics.log('running');
-        });
-    });
-
-    Scene.root.findFirst('rectangle0').then(function (r0) {
-        r0.transform.position.x.monitor().subscribe(function (x) {
-            moverPos.x = x.newValue;
-        });
-        r0.transform.position.y.monitor().subscribe(function (y) {
-            moverPos.y = y.newValue;
-        });
-        Scene.root.findFirst('rectangle1').then(function (r1) {
-            Patches.inputs.setScalar('top', top);
-            r1.transform.position.x.monitor().subscribe(function (x) {
-                hitters[0].x = x.newValue;
-            });
-            r1.transform.position.y.monitor().subscribe(function (y) {
-                hitters[0].y = y.newValue;
-                hits[0].h = hitters[0].x > moverPos.x && hitters[0].x < moverPos.x + size.w;
-                hits[0].v = hitters[0].y > moverPos.y && hitters[0].y < moverPos.y + size.h;
-                // Diagnostics.log(moverPos.y);
-                if(hits[0].h && hits[0].v){
-                    Diagnostics.log('HIT!!');
+        // Scene.root.findFirst('rectangle1').then(function (n) {
+        //     // const rect = n;
+            
+        // });
+        Scene.root.findFirst('timeTracker').then(function (r) {
+            r.worldTransform.position.x.monitor().subscribe(function (x) {
+                let oldRectTop = rectTop;
+                // times[0] = x.newValue;'
+                if(times[0].running){
+                    times[0].current += x.newValue - times[0].last;
                 }
-                
-                
+                times[0].last = x.newValue;
+                rectTop = Math.abs(x.newValue)%times[0].div;
+                if(rectTop < oldRectTop){
+                    // Diagnostics.log('reastarted');
+                    times[0].startx = Math.random();
+                    times[0].endx = Math.random();
+                    Patches.inputs.setScalar('horizontal1', canvasBounds.width.mul(Math.random() * -1));
+                    times[0].show = true;
+                    
+                    // times[0].running = Math.random() > .1;
+                }
+                proj = canvasBounds.height.div(times[0].div).mul(Math.abs(times[0].current)%times[0].div);
+    
+                // let mult = (((times[0].startx - times[0].endx) * times[0].current%times[0].div) / times[0].div);
+                // Diagnostics.log(mult);
+                // Patches.inputs.setScalar('horizontal1', canvasBounds.width.mul(mult));
+                Patches.inputs.setScalar('vertical1', proj);
+                // Diagnostics.log('running');
             });
         });
-
-    });
     
+        
+    
+        Scene.root.findFirst('rectangle0').then(function (r0) {
+            r0.transform.position.x.monitor().subscribe(function (x) {
+                moverPos.x = x.newValue;
+            });
+            r0.transform.position.y.monitor().subscribe(function (y) {
+                moverPos.y = y.newValue;
+            });
+            Scene.root.findFirst('rectangle1').then(function (r1) {
+                Patches.inputs.setScalar('top', top);
+                r1.transform.position.x.monitor().subscribe(function (x) {
+                    hitters[0].x = x.newValue;
+                });
+                r1.transform.position.y.monitor().subscribe(function (y) {
+                    hitters[0].y = y.newValue;
+                    hits[0].h = hitters[0].x > moverPos.x && hitters[0].x < moverPos.x + size.w;
+                    hits[0].v = hitters[0].y > moverPos.y && hitters[0].y < moverPos.y + size.h;
+                    // Diagnostics.log(moverPos.y);
+                    if(hits[0].h && hits[0].v && times[0].show){
+                        Diagnostics.log('HIT!!');
+                        times[0].show = false;
+                        blockCount++;
+                        blockText = `Blocks ${blockCount}`;
+                        
+                    }
+                    missText = `Misses ${missCount}`;
+                    Patches.inputs.setBoolean('show1', times[0].show);
+                    Patches.inputs.setString('blocks', blockText);
 
+                    misses[0].h = hitters[0].x > targetPos.x && hitters[0].x < targetPos.x + targetSize.w;
+                    misses[0].v = hitters[0].y > targetPos.y && hitters[0].y < targetPos.y + targetSize.h;
+                    if(misses[0].h && misses[0].v && times[0].show){
+                        Diagnostics.log('MISS!!');
+                        times[0].show = false;
+                        missCount++;
+                        missText = `Misses ${missCount}`;
+                        
+                    }
+                    Patches.inputs.setString('misses', missText);
+                    
+                });
+            });
+            
+    
+        });
+        
+        
+    
+    });
 });
+
+
 
 // Scene.root.findFirst('rectangle0').then(function (r) {
 //     rect = r;
